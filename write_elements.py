@@ -1,6 +1,10 @@
+import re
+
 from lxml import etree
 
 import properties
+
+ELEMENT_STRING_PATTERN = "\tdef get_%s_%s(self):\n\t\treturn %s(%s.%s)\n\n"
 
 NAME_ME_PLEASE = "NAME_ME_PLEASE_I_CANT_DO_IT_MYSELF"
 TITLE = "title"
@@ -37,6 +41,7 @@ def get_element_name_raw(element_to_name):
 def get_element_name(element_to_name):
     raw_name = get_element_name_raw(element_to_name)
     if raw_name != NAME_ME_PLEASE:
+        raw_name = re.sub(r'[\W]', '_', raw_name)
         return raw_name.replace(" ", "_").lower()
     return NAME_ME_PLEASE
 
@@ -51,15 +56,39 @@ def form_selector(element_to_form_selector_for, root_element):
 
 def write_imports(file):
     file.write(properties.a_import + "\n")
+    for pattern in properties.custom_patterns:
+        file.write(pattern.get(properties.ELEMENT_IMPORT) + "\n")
     file.write("\n\n")
 
 
 def write_all_elements(root_element, file):
     for element in root_element.iter():
         if element.tag == "a":
-            element_string = "\tdef get_%s_link(self):\n\t\treturn %s(%s.%s)\n\n" % (
+            element_string = ELEMENT_STRING_PATTERN % (
                 get_element_name(element),
+                properties.static_text_tag_element.lower(),
                 properties.a_tag_element,
+                properties.driver_literal,
+                form_selector(element, root_element))
+            print(element_string)
+            file.write(element_string)
+        if element.tag == "UIAStaticText":
+            element_string = ELEMENT_STRING_PATTERN % (
+                get_element_name(element),
+                properties.static_text_tag_element.lower(),
+                properties.static_text_tag_element,
+                properties.driver_literal,
+                form_selector(element, root_element))
+            print(element_string)
+            file.write(element_string)
+
+
+def write_custom_elements(root_element, file):
+    for pattern in properties.custom_patterns:
+        for element in root_element.findall(pattern.get(properties.PATTERN)):
+            element_string = ELEMENT_STRING_PATTERN % (
+                get_element_name(element),
+                pattern.get(properties.ELEMENT),
                 properties.driver_literal,
                 form_selector(element, root_element))
             print(element_string)

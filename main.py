@@ -10,8 +10,8 @@ import properties
 
 # todo add mobile shit
 # todo make relative xpathes
-# todo add custom shit
 # todo add h1, table, select
+# todo add argparses
 
 print(sys.argv[1])
 url_or_file = sys.argv[1]
@@ -38,7 +38,10 @@ def camel_back_to_underscore(name):
 
 data = get_page_source()
 
-parser = etree.HTMLParser()
+if properties.use_html:
+    parser = etree.HTMLParser()
+else:
+    parser = etree.XMLParser()
 
 root = etree.fromstring(data, parser)
 
@@ -52,4 +55,4 @@ with open(file_name, "w+") as class_file:
     write_elements.write_imports(class_file)
     write_elements.write_class_name(class_name, class_file)
     write_elements.write_all_elements(root, class_file)
-
+    write_elements.write_custom_elements(root, class_file)
