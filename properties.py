@@ -2,10 +2,6 @@ ELEMENT_IMPORT = "element_import"
 ELEMENT = "element"
 PATTERN = "pattern"
 
-use_url = False
-use_file = not use_url
-use_html = False
-
 super_class_literal = "BasePage"
 driver_literal = "driver"
 
