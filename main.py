@@ -27,7 +27,7 @@ args = arg_parser.parse_args()
 
 def get_page_source():
     global data
-    if args.use_url:
+    if args.url:
         http = urllib3.PoolManager()
         r = http.request('GET', args.url_or_file)
         assert r.status == 200, "Response from site is not 200"
