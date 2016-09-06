@@ -18,12 +18,16 @@ def write_class_name(class_name, file):
     file.write(class_string)
 
 
+def property_in_element(prop, element):
+    return prop in element.attrib and element.attrib.get(prop)
+
+
 def get_element_name_raw(element_to_name):
-    if NAME in element_to_name.attrib:
+    if property_in_element(NAME, element_to_name):
         return element_to_name.attrib.get(NAME)
-    if ID in element_to_name.attrib:
+    if property_in_element(ID, element_to_name):
         return element_to_name.attrib.get(ID)
-    if TITLE in element_to_name.attrib:
+    if property_in_element(TITLE, element_to_name):
         return element_to_name.attrib.get(TITLE)
     if element_to_name.text:
         split = element_to_name.text.lower().split(maxsplit=4)
@@ -47,40 +51,37 @@ def get_element_name(element_to_name):
 
 
 def form_selector(element_to_form_selector_for, root_element):
-    if "id" in element_to_form_selector_for.attrib:
+    if property_in_element(ID, element_to_form_selector_for):
         return "find_element_by_id('%s')" % element_to_form_selector_for.attrib.get("id")
-    if "name" in element_to_form_selector_for.attrib:
+    if property_in_element(NAME, element_to_form_selector_for):
         return "find_element_by_name('%s')" % element_to_form_selector_for.attrib.get("name")
     return "find_element_by_xpath('%s')" % etree.ElementTree(root_element).getpath(element_to_form_selector_for)
 
 
 def write_imports(file):
-    file.write(properties.a_import + "\n")
+    imports_set = set()
+    for page_element in properties.elements:
+        imports_set.add(page_element.element_import)
     for pattern in properties.custom_patterns:
-        file.write(pattern.get(properties.ELEMENT_IMPORT) + "\n")
+        imports_set.add(pattern.get(properties.ELEMENT_IMPORT))
+
+    for line in imports_set:
+        file.write(line + "\n")
     file.write("\n\n")
 
 
 def write_all_elements(root_element, file):
     for element in root_element.iter():
-        if element.tag == "a":
-            element_string = ELEMENT_STRING_PATTERN % (
-                get_element_name(element),
-                properties.static_text_tag_element.lower(),
-                properties.a_tag_element,
-                properties.driver_literal,
-                form_selector(element, root_element))
-            print(element_string)
-            file.write(element_string)
-        if element.tag == "UIAStaticText":
-            element_string = ELEMENT_STRING_PATTERN % (
-                get_element_name(element),
-                properties.static_text_tag_element.lower(),
-                properties.static_text_tag_element,
-                properties.driver_literal,
-                form_selector(element, root_element))
-            print(element_string)
-            file.write(element_string)
+        for page_element in properties.elements:
+            if element.tag == page_element.tag_name:
+                element_string = ELEMENT_STRING_PATTERN % (
+                    get_element_name(element),
+                    page_element.element_name.lower(),
+                    page_element.element_name,
+                    properties.driver_literal,
+                    form_selector(element, root_element))
+                print(element_string)
+                file.write(element_string)
 
 
 def write_custom_elements(root_element, file):
