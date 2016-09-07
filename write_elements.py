@@ -60,7 +60,8 @@ def get_element_name(element_to_name):
 def form_selector(element_to_form_selector_for, root_element, find_methods):
     for find_method in find_methods:
         if property_in_element(find_method.element_property, element_to_form_selector_for):
-            return find_method.driver_method + "('%s')" % element_to_form_selector_for.attrib.get("id")
+            return find_method.driver_method + "('%s')" % element_to_form_selector_for.attrib.get(
+                find_method.element_property)
 
     return "find_element_by_xpath('%s')" % etree.ElementTree(root_element).getpath(element_to_form_selector_for)
 

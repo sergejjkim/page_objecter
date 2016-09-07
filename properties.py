@@ -1,5 +1,7 @@
 from elements import *
 
+CONTENT_DESC = "content-desc"
+
 BY_NAME = "find_element_by_name"
 
 RESOURCE_ID = "resource-id"
@@ -44,7 +46,12 @@ ios_img = ElementStructure("UIAImage", "Image", "from elements import Image")
 
 elements_ios = [ios_text, ios_button, ios_img]
 
-elements_android = []
+android_text = ElementStructure("android.widget.TextView", "Text", "from elements import Text")
+android_image_button = ElementStructure("android.widget.ImageButton", "Button", "from elements import Button")
+android_image = ElementStructure("android.widget.ImageView", "Image", "from elements import Image")
+android_button = ElementStructure("android.widget.Button", "Button", "from elements import Button")
+
+elements_android = [android_text, android_image_button, android_button, android_image]
 
 web_by_id = FindMethod(ID, BY_ID)
 web_by_name = FindMethod(NAME, BY_NAME)
@@ -57,7 +64,7 @@ ios_by_accessibility_id = FindMethod(ACCESSIBILITY_IDENTIFIER, BY_ACCESSIBILITY_
 find_methods_ios = [ios_by_accessibility_id, ios_by_id]
 
 android_by_id = FindMethod(RESOURCE_ID, BY_ID)
-android_by_name = FindMethod(NAME, BY_NAME)
+android_by_name = FindMethod(CONTENT_DESC, BY_NAME)
 
 find_methods_android = [android_by_id, android_by_name]
 
