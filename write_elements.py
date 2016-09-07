@@ -7,9 +7,6 @@ import properties
 ELEMENT_STRING_PATTERN = "\tdef get_%s_%s(self):\n\t\treturn %s(%s.%s)\n\n"
 
 NAME_ME_PLEASE = "NAME_ME_PLEASE_I_CANT_DO_IT_MYSELF"
-TITLE = "title"
-ID = "id"
-NAME = "name"
 
 
 def write_class_name(class_name, file):
@@ -22,13 +19,23 @@ def property_in_element(prop, element):
     return prop in element.attrib and element.attrib.get(prop)
 
 
+def get_os_by_name(os):
+    if os == properties.WEB:
+        return properties.web
+    if os == properties.ANDROID:
+        return properties.android
+    if os == properties.IOS:
+        return properties.ios
+    raise NotImplementedError("Unknown OS " + os)
+
+
 def get_element_name_raw(element_to_name):
-    if property_in_element(NAME, element_to_name):
-        return element_to_name.attrib.get(NAME)
-    if property_in_element(ID, element_to_name):
-        return element_to_name.attrib.get(ID)
-    if property_in_element(TITLE, element_to_name):
-        return element_to_name.attrib.get(TITLE)
+    if property_in_element(properties.NAME, element_to_name):
+        return element_to_name.attrib.get(properties.NAME)
+    if property_in_element(properties.ID, element_to_name):
+        return element_to_name.attrib.get(properties.ID)
+    if property_in_element(properties.TITLE, element_to_name):
+        return element_to_name.attrib.get(properties.TITLE)
     if element_to_name.text:
         split = element_to_name.text.lower().split(maxsplit=4)
         if len(split) == 1:
@@ -50,17 +57,17 @@ def get_element_name(element_to_name):
     return NAME_ME_PLEASE
 
 
-def form_selector(element_to_form_selector_for, root_element):
-    if property_in_element(ID, element_to_form_selector_for):
-        return "find_element_by_id('%s')" % element_to_form_selector_for.attrib.get("id")
-    if property_in_element(NAME, element_to_form_selector_for):
-        return "find_element_by_name('%s')" % element_to_form_selector_for.attrib.get("name")
+def form_selector(element_to_form_selector_for, root_element, find_methods):
+    for find_method in find_methods:
+        if property_in_element(find_method.element_property, element_to_form_selector_for):
+            return find_method.driver_method + "('%s')" % element_to_form_selector_for.attrib.get("id")
+
     return "find_element_by_xpath('%s')" % etree.ElementTree(root_element).getpath(element_to_form_selector_for)
 
 
-def write_imports(file):
+def write_imports(file, os):
     imports_set = set()
-    for page_element in properties.elements:
+    for page_element in get_os_by_name(os).element_structures:
         imports_set.add(page_element.element_import)
     for pattern in properties.custom_patterns:
         imports_set.add(pattern.get(properties.ELEMENT_IMPORT))
@@ -70,27 +77,28 @@ def write_imports(file):
     file.write("\n\n")
 
 
-def write_all_elements(root_element, file):
+def write_all_elements(root_element, file, os):
+    os_properties = get_os_by_name(os)
     for element in root_element.iter():
-        for page_element in properties.elements:
+        for page_element in os_properties.element_structures:
             if element.tag == page_element.tag_name:
                 element_string = ELEMENT_STRING_PATTERN % (
                     get_element_name(element),
                     page_element.element_name.lower(),
                     page_element.element_name,
                     properties.driver_literal,
-                    form_selector(element, root_element))
+                    form_selector(element, root_element, os_properties.find_methods))
                 print(element_string)
                 file.write(element_string)
 
 
-def write_custom_elements(root_element, file):
+def write_custom_elements(root_element, file, os):
     for pattern in properties.custom_patterns:
         for element in root_element.findall(pattern.get(properties.PATTERN)):
             element_string = ELEMENT_STRING_PATTERN % (
                 get_element_name(element),
                 pattern.get(properties.ELEMENT),
                 properties.driver_literal,
-                form_selector(element, root_element))
+                form_selector(element, root_element, get_os_by_name(os).find_methods))
             print(element_string)
             file.write(element_string)

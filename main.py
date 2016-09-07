@@ -1,11 +1,11 @@
 import re
-import sys
 import urllib3
 import argparse
 
 from lxml import etree
 
 import write_elements
+import properties
 
 # todo add mobile shit
 # todo make relative xpathes
@@ -21,6 +21,8 @@ arg_parser.add_argument("-f", "--file", type=str,
                         help="File name to write to. If not specified, file name is generated from class name")
 arg_parser.add_argument("-p", "--parser", type=str, choices=[HTML, XML], default=XML,
                         help="Input source format, defaults to XML")
+arg_parser.add_argument("-o", "--os", type=str, choices=[properties.ANDROID, properties.IOS, properties.WEB],
+                        default=properties.WEB, help="Specify OS to work for, defaults to web")
 
 args = arg_parser.parse_args()
 
@@ -55,13 +57,13 @@ else:
 
 root = etree.fromstring(data, parser)
 
-if len(sys.argv) >= 4:
+if args.file:
     file_name = args.file
 else:
-    file_name = camel_back_to_underscore(sys.argv[2]) + ".py"
+    file_name = camel_back_to_underscore(args.class_name) + ".py"
 
 with open(file_name, "w+") as class_file:
-    write_elements.write_imports(class_file)
+    write_elements.write_imports(class_file, args.os)
     write_elements.write_class_name(args.class_name, class_file)
-    write_elements.write_all_elements(root, class_file)
-    write_elements.write_custom_elements(root, class_file)
+    write_elements.write_all_elements(root, class_file, args.os)
+    write_elements.write_custom_elements(root, class_file, args.os)
