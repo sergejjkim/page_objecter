@@ -29,11 +29,11 @@ def get_os_by_name(os):
     raise NotImplementedError("Unknown OS " + os)
 
 
-def get_element_name_raw(element_to_name):
-    if property_in_element(properties.NAME, element_to_name):
-        return element_to_name.attrib.get(properties.NAME)
-    if property_in_element(properties.ID, element_to_name):
-        return element_to_name.attrib.get(properties.ID)
+def get_element_name_raw(element_to_name, find_methods):
+    for find_method in find_methods:
+        if property_in_element(find_method.element_property, element_to_name):
+            return element_to_name.attrib.get(find_method.element_property)
+
     if property_in_element(properties.TITLE, element_to_name):
         return element_to_name.attrib.get(properties.TITLE)
     if element_to_name.text:
@@ -49,8 +49,8 @@ def get_element_name_raw(element_to_name):
     return NAME_ME_PLEASE
 
 
-def get_element_name(element_to_name):
-    raw_name = get_element_name_raw(element_to_name)
+def get_element_name(element_to_name, find_methods):
+    raw_name = get_element_name_raw(element_to_name, find_methods)
     if raw_name != NAME_ME_PLEASE:
         raw_name = re.sub(r'[\W]', '_', raw_name)
         return raw_name.replace(" ", "_").lower()
@@ -84,7 +84,7 @@ def write_all_elements(root_element, file, os):
         for page_element in os_properties.element_structures:
             if element.tag == page_element.tag_name:
                 element_string = ELEMENT_STRING_PATTERN % (
-                    get_element_name(element),
+                    get_element_name(element, os_properties.find_methods),
                     page_element.element_name.lower(),
                     page_element.element_name,
                     properties.driver_literal,
@@ -94,10 +94,11 @@ def write_all_elements(root_element, file, os):
 
 
 def write_custom_elements(root_element, file, os):
+    os_properties = get_os_by_name(os)
     for pattern in properties.custom_patterns:
         for element in root_element.findall(pattern.get(properties.PATTERN)):
             element_string = ELEMENT_STRING_PATTERN % (
-                get_element_name(element),
+                get_element_name(element, os_properties.find_methods),
                 pattern.get(properties.ELEMENT),
                 properties.driver_literal,
                 form_selector(element, root_element, get_os_by_name(os).find_methods))
