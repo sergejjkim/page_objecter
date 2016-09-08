@@ -7,7 +7,6 @@ from lxml import etree
 import write_elements
 import properties
 
-# todo add mobile shit
 # todo make relative xpathes
 # todo add h1, table, select
 XML = "xml"
