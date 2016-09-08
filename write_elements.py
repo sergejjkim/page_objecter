@@ -20,13 +20,7 @@ def property_in_element(prop, element):
 
 
 def get_os_by_name(os):
-    if os == properties.WEB:
-        return properties.web
-    if os == properties.ANDROID:
-        return properties.android
-    if os == properties.IOS:
-        return properties.ios
-    raise NotImplementedError("Unknown OS " + os)
+    return properties.os_dict[os]()
 
 
 def get_element_name_raw(element_to_name, find_methods):
