@@ -62,10 +62,8 @@ def form_selector(element_to_form_selector_for, root_element, find_methods):
 
 def write_imports(file, os):
     imports_set = set()
-    for page_element in get_os_by_name(os).element_structures:
-        imports_set.add(page_element.element_import)
-    for pattern in properties.custom_patterns:
-        imports_set.add(pattern.get(properties.ELEMENT_IMPORT))
+    imports_set.update([page_element.element_import for page_element in get_os_by_name(os).element_structures])
+    imports_set.update([pattern.get(properties.ELEMENT_IMPORT) for pattern in properties.custom_patterns])
 
     for line in imports_set:
         file.write(line + "\n")
@@ -85,6 +83,7 @@ def write_all_elements(root_element, file, os):
                     form_selector(element, root_element, os_properties.find_methods))
                 print(element_string)
                 file.write(element_string)
+                break
 
 
 def write_custom_elements(root_element, file, os):
@@ -98,3 +97,4 @@ def write_custom_elements(root_element, file, os):
                 form_selector(element, root_element, get_os_by_name(os).find_methods))
             print(element_string)
             file.write(element_string)
+            break
