@@ -4,7 +4,7 @@ from lxml import etree
 
 import properties
 
-ELEMENT_STRING_PATTERN = "\tdef get_%s_%s(self):\n\t\treturn %s(%s.%s)\n\n"
+ELEMENT_STRING_PATTERN = "    def get_%s_%s(self):\n        return %s(%s.%s)\n\n"
 
 NAME_ME_PLEASE = "NAME_ME_PLEASE_I_CANT_DO_IT_MYSELF"
 
